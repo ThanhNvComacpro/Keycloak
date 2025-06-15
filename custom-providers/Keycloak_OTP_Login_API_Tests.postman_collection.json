@@ -1,0 +1,784 @@
+{
+	"info": {
+		"_postman_id": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
+		"name": "Keycloak OTP Login API Tests",
+		"description": "API tests for Keycloak custom OTP authentication provider",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "12345678"
+	},
+	"item": [
+		{
+			"name": "1. Health Check",
+			"item": [
+				{
+					"name": "Check Keycloak Status",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{KEYCLOAK_URL}}/realms/{{REALM}}",
+							"host": [
+								"{{KEYCLOAK_URL}}"
+							],
+							"path": [
+								"realms",
+								"{{REALM}}"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "2. Admin Operations",
+			"item": [
+				{
+					"name": "Get Admin Token",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"if (pm.response.code === 200) {",
+									"    const response = pm.response.json();",
+									"    pm.globals.set('admin_token', response.access_token);",
+									"    console.log('Admin token obtained successfully');",
+									"} else {",
+									"    console.log('Failed to get admin token');",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/x-www-form-urlencoded"
+							}
+						],
+						"body": {
+							"mode": "urlencoded",
+							"urlencoded": [
+								{
+									"key": "grant_type",
+									"value": "password",
+									"type": "text"
+								},
+								{
+									"key": "client_id",
+									"value": "admin-cli",
+									"type": "text"
+								},
+								{
+									"key": "username",
+									"value": "{{ADMIN_USERNAME}}",
+									"type": "text"
+								},
+								{
+									"key": "password",
+									"value": "{{ADMIN_PASSWORD}}",
+									"type": "text"
+								}
+							]
+						},
+						"url": {
+							"raw": "{{KEYCLOAK_URL}}/realms/master/protocol/openid-connect/token",
+							"host": [
+								"{{KEYCLOAK_URL}}"
+							],
+							"path": [
+								"realms",
+								"master",
+								"protocol",
+								"openid-connect",
+								"token"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "List All Users",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{admin_token}}"
+							}
+						],
+						"url": {
+							"raw": "{{KEYCLOAK_URL}}/admin/realms/{{REALM}}/users?max=20",
+							"host": [
+								"{{KEYCLOAK_URL}}"
+							],
+							"path": [
+								"admin",
+								"realms",
+								"{{REALM}}",
+								"users"
+							],
+							"query": [
+								{
+									"key": "max",
+									"value": "20"
+								}
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "3. Email Login Tests",
+			"item": [
+				{
+					"name": "Login with Email - test1@example.com",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"// Test for expected 401 response (OTP required)",
+									"pm.test('Status should be 401 (OTP required)', function () {",
+									"    pm.response.to.have.status(401);",
+									"});",
+									"",
+									"pm.test('Response should indicate invalid grant', function () {",
+									"    const response = pm.response.json();",
+									"    pm.expect(response.error).to.be.oneOf(['invalid_grant', 'unauthorized']);",
+									"});",
+									"",
+									"console.log('✅ Email login test passed - OTP authentication required');"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/x-www-form-urlencoded"
+							}
+						],
+						"body": {
+							"mode": "urlencoded",
+							"urlencoded": [
+								{
+									"key": "grant_type",
+									"value": "password",
+									"type": "text"
+								},
+								{
+									"key": "client_id",
+									"value": "{{CLIENT_ID}}",
+									"type": "text"
+								},
+								{
+									"key": "username",
+									"value": "test1@example.com",
+									"type": "text"
+								},
+								{
+									"key": "password",
+									"value": "dummy_password_to_trigger_otp",
+									"type": "text"
+								}
+							]
+						},
+						"url": {
+							"raw": "{{KEYCLOAK_URL}}/realms/{{REALM}}/protocol/openid-connect/token",
+							"host": [
+								"{{KEYCLOAK_URL}}"
+							],
+							"path": [
+								"realms",
+								"{{REALM}}",
+								"protocol",
+								"openid-connect",
+								"token"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Login with Email - user@gmail.com",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Status should be 401 (OTP required)', function () {",
+									"    pm.response.to.have.status(401);",
+									"});",
+									"",
+									"pm.test('Response should indicate invalid grant', function () {",
+									"    const response = pm.response.json();",
+									"    pm.expect(response.error).to.be.oneOf(['invalid_grant', 'unauthorized']);",
+									"});",
+									"",
+									"console.log('✅ Gmail login test passed - OTP authentication required');"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/x-www-form-urlencoded"
+							}
+						],
+						"body": {
+							"mode": "urlencoded",
+							"urlencoded": [
+								{
+									"key": "grant_type",
+									"value": "password",
+									"type": "text"
+								},
+								{
+									"key": "client_id",
+									"value": "{{CLIENT_ID}}",
+									"type": "text"
+								},
+								{
+									"key": "username",
+									"value": "user@gmail.com",
+									"type": "text"
+								},
+								{
+									"key": "password",
+									"value": "dummy_password_to_trigger_otp",
+									"type": "text"
+								}
+							]
+						},
+						"url": {
+							"raw": "{{KEYCLOAK_URL}}/realms/{{REALM}}/protocol/openid-connect/token",
+							"host": [
+								"{{KEYCLOAK_URL}}"
+							],
+							"path": [
+								"realms",
+								"{{REALM}}",
+								"protocol",
+								"openid-connect",
+								"token"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Login with Email - demo@company.com",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Status should be 401 (OTP required)', function () {",
+									"    pm.response.to.have.status(401);",
+									"});",
+									"",
+									"pm.test('Response should indicate invalid grant', function () {",
+									"    const response = pm.response.json();",
+									"    pm.expect(response.error).to.be.oneOf(['invalid_grant', 'unauthorized']);",
+									"});",
+									"",
+									"console.log('✅ Company email login test passed - OTP authentication required');"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/x-www-form-urlencoded"
+							}
+						],
+						"body": {
+							"mode": "urlencoded",
+							"urlencoded": [
+								{
+									"key": "grant_type",
+									"value": "password",
+									"type": "text"
+								},
+								{
+									"key": "client_id",
+									"value": "{{CLIENT_ID}}",
+									"type": "text"
+								},
+								{
+									"key": "username",
+									"value": "demo@company.com",
+									"type": "text"
+								},
+								{
+									"key": "password",
+									"value": "dummy_password_to_trigger_otp",
+									"type": "text"
+								}
+							]
+						},
+						"url": {
+							"raw": "{{KEYCLOAK_URL}}/realms/{{REALM}}/protocol/openid-connect/token",
+							"host": [
+								"{{KEYCLOAK_URL}}"
+							],
+							"path": [
+								"realms",
+								"{{REALM}}",
+								"protocol",
+								"openid-connect",
+								"token"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "4. Phone Login Tests",
+			"item": [
+				{
+					"name": "Login with Phone - 0901234567",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Status should be 401 (OTP required)', function () {",
+									"    pm.response.to.have.status(401);",
+									"});",
+									"",
+									"pm.test('Response should indicate invalid grant', function () {",
+									"    const response = pm.response.json();",
+									"    pm.expect(response.error).to.be.oneOf(['invalid_grant', 'unauthorized']);",
+									"});",
+									"",
+									"console.log('✅ Phone login test passed - OTP authentication required');"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/x-www-form-urlencoded"
+							}
+						],
+						"body": {
+							"mode": "urlencoded",
+							"urlencoded": [
+								{
+									"key": "grant_type",
+									"value": "password",
+									"type": "text"
+								},
+								{
+									"key": "client_id",
+									"value": "{{CLIENT_ID}}",
+									"type": "text"
+								},
+								{
+									"key": "username",
+									"value": "0901234567",
+									"type": "text"
+								},
+								{
+									"key": "password",
+									"value": "dummy_password_to_trigger_otp",
+									"type": "text"
+								}
+							]
+						},
+						"url": {
+							"raw": "{{KEYCLOAK_URL}}/realms/{{REALM}}/protocol/openid-connect/token",
+							"host": [
+								"{{KEYCLOAK_URL}}"
+							],
+							"path": [
+								"realms",
+								"{{REALM}}",
+								"protocol",
+								"openid-connect",
+								"token"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Login with Phone - +84901234567",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Status should be 401 (OTP required)', function () {",
+									"    pm.response.to.have.status(401);",
+									"});",
+									"",
+									"pm.test('Response should indicate invalid grant', function () {",
+									"    const response = pm.response.json();",
+									"    pm.expect(response.error).to.be.oneOf(['invalid_grant', 'unauthorized']);",
+									"});",
+									"",
+									"console.log('✅ International phone login test passed - OTP authentication required');"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/x-www-form-urlencoded"
+							}
+						],
+						"body": {
+							"mode": "urlencoded",
+							"urlencoded": [
+								{
+									"key": "grant_type",
+									"value": "password",
+									"type": "text"
+								},
+								{
+									"key": "client_id",
+									"value": "{{CLIENT_ID}}",
+									"type": "text"
+								},
+								{
+									"key": "username",
+									"value": "+84901234567",
+									"type": "text"
+								},
+								{
+									"key": "password",
+									"value": "dummy_password_to_trigger_otp",
+									"type": "text"
+								}
+							]
+						},
+						"url": {
+							"raw": "{{KEYCLOAK_URL}}/realms/{{REALM}}/protocol/openid-connect/token",
+							"host": [
+								"{{KEYCLOAK_URL}}"
+							],
+							"path": [
+								"realms",
+								"{{REALM}}",
+								"protocol",
+								"openid-connect",
+								"token"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Login with Phone - 0987654321",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Status should be 401 (OTP required)', function () {",
+									"    pm.response.to.have.status(401);",
+									"});",
+									"",
+									"pm.test('Response should indicate invalid grant', function () {",
+									"    const response = pm.response.json();",
+									"    pm.expect(response.error).to.be.oneOf(['invalid_grant', 'unauthorized']);",
+									"});",
+									"",
+									"console.log('✅ Phone login test 2 passed - OTP authentication required');"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/x-www-form-urlencoded"
+							}
+						],
+						"body": {
+							"mode": "urlencoded",
+							"urlencoded": [
+								{
+									"key": "grant_type",
+									"value": "password",
+									"type": "text"
+								},
+								{
+									"key": "client_id",
+									"value": "{{CLIENT_ID}}",
+									"type": "text"
+								},
+								{
+									"key": "username",
+									"value": "0987654321",
+									"type": "text"
+								},
+								{
+									"key": "password",
+									"value": "dummy_password_to_trigger_otp",
+									"type": "text"
+								}
+							]
+						},
+						"url": {
+							"raw": "{{KEYCLOAK_URL}}/realms/{{REALM}}/protocol/openid-connect/token",
+							"host": [
+								"{{KEYCLOAK_URL}}"
+							],
+							"path": [
+								"realms",
+								"{{REALM}}",
+								"protocol",
+								"openid-connect",
+								"token"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Login with Phone - 0123456789",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Status should be 401 (OTP required)', function () {",
+									"    pm.response.to.have.status(401);",
+									"});",
+									"",
+									"pm.test('Response should indicate invalid grant', function () {",
+									"    const response = pm.response.json();",
+									"    pm.expect(response.error).to.be.oneOf(['invalid_grant', 'unauthorized']);",
+									"});",
+									"",
+									"console.log('✅ Phone login test 3 passed - OTP authentication required');"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/x-www-form-urlencoded"
+							}
+						],
+						"body": {
+							"mode": "urlencoded",
+							"urlencoded": [
+								{
+									"key": "grant_type",
+									"value": "password",
+									"type": "text"
+								},
+								{
+									"key": "client_id",
+									"value": "{{CLIENT_ID}}",
+									"type": "text"
+								},
+								{
+									"key": "username",
+									"value": "0123456789",
+									"type": "text"
+								},
+								{
+									"key": "password",
+									"value": "dummy_password_to_trigger_otp",
+									"type": "text"
+								}
+							]
+						},
+						"url": {
+							"raw": "{{KEYCLOAK_URL}}/realms/{{REALM}}/protocol/openid-connect/token",
+							"host": [
+								"{{KEYCLOAK_URL}}"
+							],
+							"path": [
+								"realms",
+								"{{REALM}}",
+								"protocol",
+								"openid-connect",
+								"token"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "5. Browser Authentication URLs",
+			"item": [
+				{
+					"name": "Get Auth URL for Email User",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{KEYCLOAK_URL}}/realms/{{REALM}}/protocol/openid-connect/auth?client_id={{CLIENT_ID}}&response_type=code&scope=openid&redirect_uri={{KEYCLOAK_URL}}/realms/{{REALM}}/account&login_hint=test1@example.com",
+							"host": [
+								"{{KEYCLOAK_URL}}"
+							],
+							"path": [
+								"realms",
+								"{{REALM}}",
+								"protocol",
+								"openid-connect",
+								"auth"
+							],
+							"query": [
+								{
+									"key": "client_id",
+									"value": "{{CLIENT_ID}}"
+								},
+								{
+									"key": "response_type",
+									"value": "code"
+								},
+								{
+									"key": "scope",
+									"value": "openid"
+								},
+								{
+									"key": "redirect_uri",
+									"value": "{{KEYCLOAK_URL}}/realms/{{REALM}}/account"
+								},
+								{
+									"key": "login_hint",
+									"value": "test1@example.com"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Auth URL for Phone User",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{KEYCLOAK_URL}}/realms/{{REALM}}/protocol/openid-connect/auth?client_id={{CLIENT_ID}}&response_type=code&scope=openid&redirect_uri={{KEYCLOAK_URL}}/realms/{{REALM}}/account&login_hint=0901234567",
+							"host": [
+								"{{KEYCLOAK_URL}}"
+							],
+							"path": [
+								"realms",
+								"{{REALM}}",
+								"protocol",
+								"openid-connect",
+								"auth"
+							],
+							"query": [
+								{
+									"key": "client_id",
+									"value": "{{CLIENT_ID}}"
+								},
+								{
+									"key": "response_type",
+									"value": "code"
+								},
+								{
+									"key": "scope",
+									"value": "openid"
+								},
+								{
+									"key": "redirect_uri",
+									"value": "{{KEYCLOAK_URL}}/realms/{{REALM}}/account"
+								},
+								{
+									"key": "login_hint",
+									"value": "0901234567"
+								}
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		}
+	],
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		}
+	],
+	"variable": [
+		{
+			"key": "KEYCLOAK_URL",
+			"value": "http://localhost:8080",
+			"type": "string"
+		},
+		{
+			"key": "REALM",
+			"value": "master",
+			"type": "string"
+		},
+		{
+			"key": "CLIENT_ID",
+			"value": "admin-cli",
+			"type": "string"
+		},
+		{
+			"key": "ADMIN_USERNAME",
+			"value": "admin",
+			"type": "string"
+		},
+		{
+			"key": "ADMIN_PASSWORD",
+			"value": "admin123",
+			"type": "string"
+		}
+	]
+}

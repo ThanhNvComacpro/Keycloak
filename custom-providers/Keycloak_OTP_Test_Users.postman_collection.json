@@ -1,0 +1,260 @@
+{
+  "info": {
+    "name": "Keycloak OTP Test Users",
+    "description": "Create test users for OTP authentication testing",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "keycloak_url",
+      "value": "http://localhost:8080"
+    },
+    {
+      "key": "realm",
+      "value": "master"
+    },
+    {
+      "key": "admin_username",
+      "value": "admin"
+    },
+    {
+      "key": "admin_password",
+      "value": "admin123"
+    },
+    {
+      "key": "admin_token",
+      "value": ""
+    }
+  ],
+  "item": [
+    {
+      "name": "1. Get Admin Token",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "if (pm.response.code === 200) {",
+              "    const response = pm.response.json();",
+              "    pm.collectionVariables.set('admin_token', response.access_token);",
+              "    console.log('Admin token saved to collection variable');",
+              "} else {",
+              "    console.log('Failed to get admin token:', pm.response.text());",
+              "}"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/x-www-form-urlencoded"
+          }
+        ],
+        "body": {
+          "mode": "urlencoded",
+          "urlencoded": [
+            {
+              "key": "grant_type",
+              "value": "password"
+            },
+            {
+              "key": "client_id",
+              "value": "admin-cli"
+            },
+            {
+              "key": "username",
+              "value": "{{admin_username}}"
+            },
+            {
+              "key": "password",
+              "value": "{{admin_password}}"
+            }
+          ]
+        },
+        "url": {
+          "raw": "{{keycloak_url}}/realms/master/protocol/openid-connect/token",
+          "host": ["{{keycloak_url}}"],
+          "path": ["realms", "master", "protocol", "openid-connect", "token"]
+        }
+      }
+    },
+    {
+      "name": "2. Create Email User - test1@example.com",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{admin_token}}"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"username\": \"test1_email\",\n  \"email\": \"test1@example.com\",\n  \"firstName\": \"Test\",\n  \"lastName\": \"User1\",\n  \"enabled\": true,\n  \"emailVerified\": true,\n  \"attributes\": {\n    \"loginType\": [\"email\"]\n  }\n}"
+        },
+        "url": {
+          "raw": "{{keycloak_url}}/admin/realms/{{realm}}/users",
+          "host": ["{{keycloak_url}}"],
+          "path": ["admin", "realms", "{{realm}}", "users"]
+        }
+      }
+    },
+    {
+      "name": "3. Create Email User - user@gmail.com",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{admin_token}}"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"username\": \"user_gmail\",\n  \"email\": \"user@gmail.com\",\n  \"firstName\": \"Gmail\",\n  \"lastName\": \"User\",\n  \"enabled\": true,\n  \"emailVerified\": true,\n  \"attributes\": {\n    \"loginType\": [\"email\"]\n  }\n}"
+        },
+        "url": {
+          "raw": "{{keycloak_url}}/admin/realms/{{realm}}/users",
+          "host": ["{{keycloak_url}}"],
+          "path": ["admin", "realms", "{{realm}}", "users"]
+        }
+      }
+    },
+    {
+      "name": "4. Create Phone User - +84901234567",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{admin_token}}"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"username\": \"user_0901234567\",\n  \"firstName\": \"Phone\",\n  \"lastName\": \"User1\",\n  \"enabled\": true,\n  \"attributes\": {\n    \"phoneNumber\": [\"+84901234567\"],\n    \"phoneVerified\": [\"true\"],\n    \"loginType\": [\"phone\"]\n  }\n}"
+        },
+        "url": {
+          "raw": "{{keycloak_url}}/admin/realms/{{realm}}/users",
+          "host": ["{{keycloak_url}}"],
+          "path": ["admin", "realms", "{{realm}}", "users"]
+        }
+      }
+    },
+    {
+      "name": "5. Create Phone User - +84987654321",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{admin_token}}"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"username\": \"user_0987654321\",\n  \"firstName\": \"Phone\",\n  \"lastName\": \"User2\",\n  \"enabled\": true,\n  \"attributes\": {\n    \"phoneNumber\": [\"+84987654321\"],\n    \"phoneVerified\": [\"true\"],\n    \"loginType\": [\"phone\"]\n  }\n}"
+        },
+        "url": {
+          "raw": "{{keycloak_url}}/admin/realms/{{realm}}/users",
+          "host": ["{{keycloak_url}}"],
+          "path": ["admin", "realms", "{{realm}}", "users"]
+        }
+      }
+    },
+    {
+      "name": "6. Create Phone User - 0123456789",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{admin_token}}"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"username\": \"user_0123456789\",\n  \"firstName\": \"Phone\",\n  \"lastName\": \"User3\",\n  \"enabled\": true,\n  \"attributes\": {\n    \"phoneNumber\": [\"0123456789\"],\n    \"phoneVerified\": [\"true\"],\n    \"loginType\": [\"phone\"]\n  }\n}"
+        },
+        "url": {
+          "raw": "{{keycloak_url}}/admin/realms/{{realm}}/users",
+          "host": ["{{keycloak_url}}"],
+          "path": ["admin", "realms", "{{realm}}", "users"]
+        }
+      }
+    },
+    {
+      "name": "7. List All Users",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{admin_token}}"
+          }
+        ],
+        "url": {
+          "raw": "{{keycloak_url}}/admin/realms/{{realm}}/users?max=20",
+          "host": ["{{keycloak_url}}"],
+          "path": ["admin", "realms", "{{realm}}", "users"],
+          "query": [
+            {
+              "key": "max",
+              "value": "20"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "8. Search User by Email",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{admin_token}}"
+          }
+        ],
+        "url": {
+          "raw": "{{keycloak_url}}/admin/realms/{{realm}}/users?email=test1@example.com&exact=true",
+          "host": ["{{keycloak_url}}"],
+          "path": ["admin", "realms", "{{realm}}", "users"],
+          "query": [
+            {
+              "key": "email",
+              "value": "test1@example.com"
+            },
+            {
+              "key": "exact",
+              "value": "true"
+            }
+          ]
+        }
+      }
+    }
+  ]
+}
