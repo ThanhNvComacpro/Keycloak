@@ -169,7 +169,8 @@ Keycloak cung cấp comprehensive REST APIs cho authentication và administratio
 
 ### **📖 API Documentation**
 - **Complete API Guide**: `KEYCLOAK_APIS.md`
-- **Postman Collection**: `Keycloak_APIs.postman_collection.json` ⭐
+- **Postman Collection**: `Keycloak_APIs.postman_collection.json`
+- **Interactive Testing**: `./test-apis.sh`
 
 ### **🔑 Main API Categories**
 
@@ -199,72 +200,75 @@ DELETE /users/{id}             # Delete user
 PUT  /users/{id}/reset-password # Reset password
 ```
 
-### **� Postman Collection**
+### **🚀 Quick Examples**
 
-#### **Import Collection**
-1. Mở Postman
-2. Click **Import**
-3. Chọn file `Keycloak_APIs.postman_collection.json`
-4. Collection sẽ được import với tất cả APIs
-
-#### **Setup Variables**
-Sau khi import, set các variables:
-- `keycloak_url`: `http://localhost:8080`
-- `realm`: `master`
-- `client_id`: `admin-cli`
-
-#### **Collection Structure**
-```
-📁 Keycloak REST APIs
-├── 🔐 1. Authentication
-│   ├── Get Admin Token
-│   ├── Login with Email/Password
-│   ├── Get User Info
-│   └── Logout
-├── 👤 2. User Management
-│   ├── Get All Users
-│   ├── Get User by Email
-│   ├── Create User
-│   ├── Update User
-│   ├── Reset User Password
-│   └── Delete User
-├── 🎭 3. Role Management
-│   ├── Get Realm Roles
-│   ├── Create Role
-│   ├── Assign Role to User
-│   └── Get User Roles
-├── 🏢 4. Client Management
-│   ├── Get Clients
-│   └── Create Client
-└── 🔑 5. Session Management
-    ├── Get User Sessions
-    ├── Logout User (Admin)
-    └── Get Session Stats
+#### **Login với Email (cURL)**
+```bash
+curl -X POST \
+  'http://localhost:8080/realms/master/protocol/openid-connect/token' \
+  -H 'Content-Type: application/x-www-form-urlencoded' \
+  -d 'grant_type=password&client_id=admin-cli&username=user@example.com&password=password123'
 ```
 
-### **� Quick Start với Postman**
+#### **Tạo User (Admin API)**
+```bash
+# Get admin token first
+ADMIN_TOKEN=$(curl -s -X POST \
+  'http://localhost:8080/realms/master/protocol/openid-connect/token' \
+  -d 'grant_type=password&client_id=admin-cli&username=admin&password=admin123' \
+  | jq -r '.access_token')
 
-#### **Step 1: Get Admin Token**
-1. Mở **"Get Admin Token"** request
-2. Update credentials trong Body:
-   - `username`: `admin`
-   - `password`: `admin123` (hoặc password bạn đã set)
-3. Send request
-4. Token sẽ tự động lưu vào `admin_token` variable
+# Create user
+curl -X POST \
+  'http://localhost:8080/admin/realms/master/users' \
+  -H "Authorization: Bearer $ADMIN_TOKEN" \
+  -H 'Content-Type: application/json' \
+  -d '{
+    "username": "newuser@example.com",
+    "email": "newuser@example.com",
+    "firstName": "New",
+    "lastName": "User",
+    "enabled": true,
+    "credentials": [{
+      "type": "password",
+      "value": "password123",
+      "temporary": false
+    }]
+  }'
+```
 
-#### **Step 2: Test User Login**
-1. Mở **"Login with Email/Password"** request
-2. Update credentials trong Body:
-   - `username`: email của user
-   - `password`: password của user
-3. Send request
-4. Access token sẽ được lưu vào `access_token` variable
+### **💻 Code Examples**
 
-#### **Step 3: Create Test User**
-1. Mở **"Create User"** request
-2. Update JSON body với thông tin user
-3. Send request
-4. User sẽ được tạo trong Keycloak
+#### **Node.js/JavaScript**
+```javascript
+// See: examples/node-js-example.js
+const KeycloakAPI = require('./examples/node-js-example.js');
+
+const keycloak = new KeycloakAPI('http://localhost:8080', 'master', 'admin-cli');
+
+// Login user
+const result = await keycloak.loginWithEmail('user@example.com', 'password123');
+if (result.success) {
+    console.log('Access Token:', result.data.access_token);
+}
+```
+
+### **🛠️ Testing Tools**
+
+#### **Interactive CLI Tool**
+```bash
+cd examples
+npm run test-interactive
+```
+Features:
+- ✅ Test user login
+- ✅ Create test users  
+- ✅ Search by email
+- ✅ List all users
+- ✅ Get realm info
+
+#### **Postman Collection**
+Import `Keycloak_APIs.postman_collection.json` vào Postman để test APIs với GUI
 
 ### **🔒 Security Best Practices**
 
@@ -279,7 +283,7 @@ Sau khi import, set các variables:
 
 #### **Backend Authentication Flow**
 1. Frontend gửi credentials đến Backend
-2. Backend call Keycloak login API (sử dụng Postman để test)
+2. Backend call Keycloak login API
 3. Backend verify token và return to Frontend
 4. Frontend store token và use cho subsequent requests
 
@@ -288,15 +292,3 @@ Sau khi import, set các variables:
 2. User login tại Keycloak
 3. Keycloak redirect về Frontend với authorization code
 4. Frontend exchange code for tokens
-
-### **🎯 Next Steps**
-
-1. **Test tất cả APIs** bằng Postman Collection
-2. **Customize cho project của bạn**
-3. **Implement production security measures**
-
----
-
-**Happy coding with Keycloak! 🚀**
-
-> 💡 **Tip**: Sử dụng Postman Collection `Keycloak_APIs.postman_collection.json` để test toàn bộ API workflow một cách nhanh chóng và hiệu quả!

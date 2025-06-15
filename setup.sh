@@ -28,8 +28,13 @@ fi
 
 # Install Java 17
 echo ""
-echo "☕ Installing Java 17..."
-brew install openjdk@17
+echo "☕ Checking Java 17..."
+if brew list openjdk@17 &>/dev/null; then
+    echo "✅ Java 17 is already installed"
+else
+    echo "📦 Installing Java 17..."
+    brew install openjdk@17
+fi
 
 # Set up Java environment
 echo ""
