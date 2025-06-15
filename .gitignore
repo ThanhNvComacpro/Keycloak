@@ -1,0 +1,50 @@
+# Keycloak Data
+data/
+
+# Temporary directories
+temp_extract/
+temp_quarkus/
+
+# Node.js dependencies
+examples/node_modules/
+examples/npm-debug.log*
+examples/yarn-debug.log*
+examples/yarn-error.log*
+
+# Logs
+*.log
+
+# Runtime data
+*.pid
+*.seed
+*.pid.lock
+
+# Environment variables
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# IDE files
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS generated files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Backup files
+*.bak
+*.backup
+*.tmp
+
+# Custom admin passwords (if any)
+admin-passwords.txt

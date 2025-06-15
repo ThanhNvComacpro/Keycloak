@@ -31,6 +31,10 @@ if [ -z "$JAVA_HOME" ]; then
         export JAVA_HOME="/opt/homebrew/opt/openjdk@17/libexec/openjdk.jdk/Contents/Home"
         export PATH="$JAVA_HOME/bin:$PATH"
         echo "✅ Set JAVA_HOME to: $JAVA_HOME"
+    elif [ -d "/usr/local/opt/openjdk@17/libexec/openjdk.jdk/Contents/Home" ]; then
+        export JAVA_HOME="/usr/local/opt/openjdk@17/libexec/openjdk.jdk/Contents/Home"
+        export PATH="$JAVA_HOME/bin:$PATH"
+        echo "✅ Set JAVA_HOME to: $JAVA_HOME"
     elif [ -d "/usr/libexec/java_home" ]; then
         export JAVA_HOME=$(/usr/libexec/java_home)
         echo "✅ Set JAVA_HOME to: $JAVA_HOME"

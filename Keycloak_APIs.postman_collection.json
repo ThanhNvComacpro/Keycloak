@@ -1,0 +1,529 @@
+{
+  "info": {
+    "name": "Keycloak REST APIs",
+    "description": "Complete collection of Keycloak REST APIs for authentication and administration",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "keycloak_url",
+      "value": "http://localhost:8080",
+      "type": "string"
+    },
+    {
+      "key": "realm",
+      "value": "master",
+      "type": "string"
+    },
+    {
+      "key": "admin_token",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "access_token",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "client_id",
+      "value": "admin-cli",
+      "type": "string"
+    }
+  ],
+  "item": [
+    {
+      "name": "1. Authentication",
+      "item": [
+        {
+          "name": "Get Admin Token",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "    const response = pm.response.json();",
+                  "    pm.collectionVariables.set('admin_token', response.access_token);",
+                  "    console.log('Admin token saved to collection variable');",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/x-www-form-urlencoded"
+              }
+            ],
+            "body": {
+              "mode": "urlencoded",
+              "urlencoded": [
+                {
+                  "key": "grant_type",
+                  "value": "password"
+                },
+                {
+                  "key": "client_id",
+                  "value": "{{client_id}}"
+                },
+                {
+                  "key": "username",
+                  "value": "admin"
+                },
+                {
+                  "key": "password",
+                  "value": "admin123"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{keycloak_url}}/realms/{{realm}}/protocol/openid-connect/token",
+              "host": ["{{keycloak_url}}"],
+              "path": ["realms", "{{realm}}", "protocol", "openid-connect", "token"]
+            }
+          }
+        },
+        {
+          "name": "Login with Email/Password",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "    const response = pm.response.json();",
+                  "    pm.collectionVariables.set('access_token', response.access_token);",
+                  "    console.log('Access token saved to collection variable');",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/x-www-form-urlencoded"
+              }
+            ],
+            "body": {
+              "mode": "urlencoded",
+              "urlencoded": [
+                {
+                  "key": "grant_type",
+                  "value": "password"
+                },
+                {
+                  "key": "client_id",
+                  "value": "{{client_id}}"
+                },
+                {
+                  "key": "username",
+                  "value": "user@example.com"
+                },
+                {
+                  "key": "password",
+                  "value": "password123"
+                },
+                {
+                  "key": "scope",
+                  "value": "openid profile email"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{keycloak_url}}/realms/{{realm}}/protocol/openid-connect/token",
+              "host": ["{{keycloak_url}}"],
+              "path": ["realms", "{{realm}}", "protocol", "openid-connect", "token"]
+            }
+          }
+        },
+        {
+          "name": "Get User Info",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{keycloak_url}}/realms/{{realm}}/protocol/openid-connect/userinfo",
+              "host": ["{{keycloak_url}}"],
+              "path": ["realms", "{{realm}}", "protocol", "openid-connect", "userinfo"]
+            }
+          }
+        },
+        {
+          "name": "Logout",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/x-www-form-urlencoded"
+              }
+            ],
+            "body": {
+              "mode": "urlencoded",
+              "urlencoded": [
+                {
+                  "key": "client_id",
+                  "value": "{{client_id}}"
+                },
+                {
+                  "key": "refresh_token",
+                  "value": "{{refresh_token}}"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{keycloak_url}}/realms/{{realm}}/protocol/openid-connect/logout",
+              "host": ["{{keycloak_url}}"],
+              "path": ["realms", "{{realm}}", "protocol", "openid-connect", "logout"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "2. User Management",
+      "item": [
+        {
+          "name": "Get All Users",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{admin_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{keycloak_url}}/admin/realms/{{realm}}/users",
+              "host": ["{{keycloak_url}}"],
+              "path": ["admin", "realms", "{{realm}}", "users"]
+            }
+          }
+        },
+        {
+          "name": "Get User by Email",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{admin_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{keycloak_url}}/admin/realms/{{realm}}/users?email=user@example.com&exact=true",
+              "host": ["{{keycloak_url}}"],
+              "path": ["admin", "realms", "{{realm}}", "users"],
+              "query": [
+                {
+                  "key": "email",
+                  "value": "user@example.com"
+                },
+                {
+                  "key": "exact",
+                  "value": "true"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Create User",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{admin_token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"john.doe@example.com\",\n  \"email\": \"john.doe@example.com\",\n  \"firstName\": \"John\",\n  \"lastName\": \"Doe\",\n  \"enabled\": true,\n  \"emailVerified\": true,\n  \"credentials\": [{\n    \"type\": \"password\",\n    \"value\": \"password123\",\n    \"temporary\": false\n  }],\n  \"attributes\": {\n    \"department\": [\"IT\"],\n    \"phone\": [\"+1234567890\"]\n  }\n}"
+            },
+            "url": {
+              "raw": "{{keycloak_url}}/admin/realms/{{realm}}/users",
+              "host": ["{{keycloak_url}}"],
+              "path": ["admin", "realms", "{{realm}}", "users"]
+            }
+          }
+        },
+        {
+          "name": "Update User",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{admin_token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"firstName\": \"John Updated\",\n  \"lastName\": \"Doe Updated\",\n  \"email\": \"john.updated@example.com\",\n  \"attributes\": {\n    \"department\": [\"Marketing\"],\n    \"phone\": [\"+0987654321\"]\n  }\n}"
+            },
+            "url": {
+              "raw": "{{keycloak_url}}/admin/realms/{{realm}}/users/{{user_id}}",
+              "host": ["{{keycloak_url}}"],
+              "path": ["admin", "realms", "{{realm}}", "users", "{{user_id}}"]
+            }
+          }
+        },
+        {
+          "name": "Reset User Password",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{admin_token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"type\": \"password\",\n  \"value\": \"newpassword123\",\n  \"temporary\": false\n}"
+            },
+            "url": {
+              "raw": "{{keycloak_url}}/admin/realms/{{realm}}/users/{{user_id}}/reset-password",
+              "host": ["{{keycloak_url}}"],
+              "path": ["admin", "realms", "{{realm}}", "users", "{{user_id}}", "reset-password"]
+            }
+          }
+        },
+        {
+          "name": "Delete User",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{admin_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{keycloak_url}}/admin/realms/{{realm}}/users/{{user_id}}",
+              "host": ["{{keycloak_url}}"],
+              "path": ["admin", "realms", "{{realm}}", "users", "{{user_id}}"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "3. Role Management",
+      "item": [
+        {
+          "name": "Get Realm Roles",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{admin_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{keycloak_url}}/admin/realms/{{realm}}/roles",
+              "host": ["{{keycloak_url}}"],
+              "path": ["admin", "realms", "{{realm}}", "roles"]
+            }
+          }
+        },
+        {
+          "name": "Create Role",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{admin_token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"developer\",\n  \"description\": \"Developer role with specific permissions\"\n}"
+            },
+            "url": {
+              "raw": "{{keycloak_url}}/admin/realms/{{realm}}/roles",
+              "host": ["{{keycloak_url}}"],
+              "path": ["admin", "realms", "{{realm}}", "roles"]
+            }
+          }
+        },
+        {
+          "name": "Assign Role to User",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{admin_token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "[{\n  \"id\": \"{{role_id}}\",\n  \"name\": \"developer\"\n}]"
+            },
+            "url": {
+              "raw": "{{keycloak_url}}/admin/realms/{{realm}}/users/{{user_id}}/role-mappings/realm",
+              "host": ["{{keycloak_url}}"],
+              "path": ["admin", "realms", "{{realm}}", "users", "{{user_id}}", "role-mappings", "realm"]
+            }
+          }
+        },
+        {
+          "name": "Get User Roles",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{admin_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{keycloak_url}}/admin/realms/{{realm}}/users/{{user_id}}/role-mappings/realm",
+              "host": ["{{keycloak_url}}"],
+              "path": ["admin", "realms", "{{realm}}", "users", "{{user_id}}", "role-mappings", "realm"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "4. Client Management",
+      "item": [
+        {
+          "name": "Get Clients",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{admin_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{keycloak_url}}/admin/realms/{{realm}}/clients",
+              "host": ["{{keycloak_url}}"],
+              "path": ["admin", "realms", "{{realm}}", "clients"]
+            }
+          }
+        },
+        {
+          "name": "Create Client",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{admin_token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"clientId\": \"my-backend-app\",\n  \"name\": \"My Backend Application\",\n  \"enabled\": true,\n  \"publicClient\": false,\n  \"secret\": \"my-client-secret\",\n  \"redirectUris\": [\"http://localhost:3000/*\"],\n  \"webOrigins\": [\"http://localhost:3000\"],\n  \"standardFlowEnabled\": true,\n  \"directAccessGrantsEnabled\": true,\n  \"serviceAccountsEnabled\": true\n}"
+            },
+            "url": {
+              "raw": "{{keycloak_url}}/admin/realms/{{realm}}/clients",
+              "host": ["{{keycloak_url}}"],
+              "path": ["admin", "realms", "{{realm}}", "clients"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "5. Session Management",
+      "item": [
+        {
+          "name": "Get User Sessions",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{admin_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{keycloak_url}}/admin/realms/{{realm}}/users/{{user_id}}/sessions",
+              "host": ["{{keycloak_url}}"],
+              "path": ["admin", "realms", "{{realm}}", "users", "{{user_id}}", "sessions"]
+            }
+          }
+        },
+        {
+          "name": "Logout User (Admin)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{admin_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{keycloak_url}}/admin/realms/{{realm}}/users/{{user_id}}/logout",
+              "host": ["{{keycloak_url}}"],
+              "path": ["admin", "realms", "{{realm}}", "users", "{{user_id}}", "logout"]
+            }
+          }
+        },
+        {
+          "name": "Get Session Stats",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{admin_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{keycloak_url}}/admin/realms/{{realm}}/sessions/stats",
+              "host": ["{{keycloak_url}}"],
+              "path": ["admin", "realms", "{{realm}}", "sessions", "stats"]
+            }
+          }
+        }
+      ]
+    }
+  ]
+}
